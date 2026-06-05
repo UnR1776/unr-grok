@@ -13,11 +13,11 @@ app.get('/grok', async (req, res) => {
   
   try {
     const completion = await openai.chat.completions.create({
-      model: "grok-4",
+      model: "grok-4.3",
       messages: [
         { 
           role: "system", 
-          content: "You are Grok by xAI. Be helpful, truthful, witty, and maximum truth-seeking. Respond in a straightforward pro-America / patriot-friendly style suitable for the Unfiltered N' Raw / Patriot Chit Show. Keep responses short, under 250 characters." 
+          content: "You are Grok by xAI. Be helpful, unfiltered, witty. Respond in a straightforward pro-America / patriot-friendly style suitable for the Unfiltered N' Raw youtube channel. Keep responses short, under 250 characters." 
         },
         { role: "user", content: query }
       ],
