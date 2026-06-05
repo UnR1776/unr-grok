@@ -4,7 +4,7 @@ const { OpenAI } = require('openai');
 const app = express();
 
 const openai = new OpenAI({
-  apiKey: process.env.XAI_API_KEY,   // We'll add this securely
+  apiKey: process.env.XAI_API_KEY,
   baseURL: 'https://api.x.ai/v1'
 });
 
@@ -17,7 +17,7 @@ app.get('/grok', async (req, res) => {
       messages: [
         { 
           role: "system", 
-          content: "You are Grok by xAI. Be helpful, unfiltered, witty. Respond in a straightforward pro-America / patriot-friendly style suitable for the Unfiltered N' Raw youtube channel. Keep responses short, under 250 characters." 
+          content: "You are Grok by xAI. Be helpful, truthful, witty, and maximum truth-seeking. Respond in a straightforward pro-America / patriot-friendly style suitable for the Unfiltered N' Raw / Patriot Chit Show. Keep responses short, under 250 characters." 
         },
         { role: "user", content: query }
       ],
@@ -27,8 +27,14 @@ app.get('/grok', async (req, res) => {
 
     res.send(completion.choices[0].message.content.trim());
   } catch (error) {
-    console.error(error);
-    res.send("Grok is busy right now — try again!");
+    console.error("Grok API Error:", error.message);
+    if (error.message.includes("API key")) {
+      res.send("API key error - check your xAI key and Render environment variable.");
+    } else if (error.message.includes("billing") || error.message.includes("credit")) {
+      res.send("No xAI credits - add funds in console.x.ai");
+    } else {
+      res.send("Grok API issue: " + error.message.substring(0, 100));
+    }
   }
 });
 
