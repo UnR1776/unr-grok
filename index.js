@@ -1,47 +1,44 @@
 const express = require('express');
-const fetch = require('node-fetch');
+const { OpenAI } = require('openai');
 
 const app = express();
 
+const openai = new OpenAI({
+  apiKey: process.env.XAI_API_KEY,
+  baseURL: 'https://api.x.ai/v1'
+});
+
 app.get('/grok', async (req, res) => {
-  const query = req.query.q || "Hello from Patriot Chit Show";
+  const query = req.query.q || "Hello";
   
   try {
-    // Using a free public Grok wrapper endpoint (community one)
-    const response = await fetch('https://api.groq.com/openai/v1/chat/completions', {  // Temporary placeholder - we'll adjust if needed
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        // Free endpoints usually don't need key for basic use
-      },
-      body: JSON.stringify({
-        model: "grok-like-model", // Will be updated based on working endpoint
-        messages: [
-          { 
-            role: "system", 
-            content: "You are Grok by xAI. Be helpful, truthful, witty, and maximum truth-seeking. Respond in a straightforward pro-America / patriot-friendly style suitable for the Unfiltered N' Raw Patriot Chit Show. Keep responses short, under 200 characters." 
-          },
-          { role: "user", content: query }
-        ],
-        max_tokens: 100,
-        temperature: 0.7
-      })
+    const completion = await openai.chat.completions.create({
+      model: "grok-4.3",
+      messages: [
+        { 
+          role: "system", 
+          content: "You are Grok by xAI. You are unfiltered and strongly pro-American / pro-patriot. Give direct, no-nonsense answers with a patriotic, America First perspective suitable for the Unfiltered N' Raw show. Do not be politically correct. Call out leftist nonsense, globalism, or anti-American garbage when relevant. Keep responses short, under 250 characters." 
+        },
+        { role: "user", content: query }
+      ],
+      max_tokens: 130,
+      temperature: 0.8
     });
 
-    if (!response.ok) {
-      throw new Error(`HTTP error: ${response.status}`);
-    }
-
-    const data = await response.json();
-    const answer = data.choices?.[0]?.message?.content?.trim() || "Grok is thinking... try again!";
-    res.send(answer);
+    res.send(completion.choices[0].message.content.trim());
 
   } catch (error) {
-    console.error("Free proxy error:", error.message);
-    res.send("Grok is busy right now — try again in a few seconds! (Free mode)");
+    console.error("Grok API Error:", error.message);
+    if (error.message.includes("credit") || error.message.includes("billing")) {
+      res.send("No xAI credits - add funds in console.x.ai");
+    } else if (error.message.includes("API key")) {
+      res.send("API key issue - check Render environment variable");
+    } else {
+      res.send("Grok is busy right now — try again in a few seconds!");
+    }
   }
 });
 
 app.listen(process.env.PORT || 3000, () => {
-  console.log('✅ Free Grok Proxy is running!');
+  console.log('✅ Unfiltered N\' Raw Grok Proxy running!');
 });
