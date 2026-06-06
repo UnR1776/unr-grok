@@ -9,8 +9,15 @@ const openai = new OpenAI({
 });
 
 app.get('/grok', async (req, res) => {
-  const query = req.query.q || "Hello";
-  
+  // Better query handling
+  let query = req.query.q;
+  if (!query && req.query.command) query = req.query.command;
+  if (!query) query = req.url.split('?q=')[1] || "Hello";
+
+  query = decodeURIComponent(query);
+
+  console.log("Received query:", query); // For debugging
+
   try {
     const completion = await openai.chat.completions.create({
       model: "grok-4.3",
