@@ -9,18 +9,14 @@ const openai = new OpenAI({
 });
 
 app.get('/grok', async (req, res) => {
-  let raw = req.query.q || req.query.args || req.query.msg || "";
+  let query = req.query.q || req.query.args || req.query.msg || req.query.message || req.query.fullmessage || "";
 
-  // Better decoding to fix � replacement character
-  let query = decodeURIComponent(raw.replace(/\+/g, ' '));
+  query = decodeURIComponent(query.replace(/\+/g, ' '));
   query = query.replace(/^!grok\s*/i, "").trim();
 
-  if (!query || query.length < 2) {
-    query = raw.replace(/^!grok\s*/i, "").trim();
-  }
+  if (!query) query = "What is your question?";
 
-  console.log("RAW:", raw);
-  console.log("CLEANED:", query);
+  console.log("FINAL QUERY USED:", query);
 
   try {
     const completion = await openai.chat.completions.create({
@@ -28,7 +24,7 @@ app.get('/grok', async (req, res) => {
       messages: [
         { 
           role: "system", 
-          content: "You are Grok by xAI. You are unfiltered and strongly pro-American / pro-patriot. Give direct, no-nonsense answers with a patriotic, America First perspective. Keep responses short, under 250 characters." 
+          content: "You are Grok by xAI. Unfiltered, strongly pro-American, America First. Direct, no-nonsense answers. Keep under 250 characters." 
         },
         { role: "user", content: query }
       ],
@@ -43,6 +39,4 @@ app.get('/grok', async (req, res) => {
   }
 });
 
-app.listen(process.env.PORT || 3000, () => {
-  console.log('✅ Grok Proxy running!');
-});
+app.listen(process.env.PORT || 3000);
