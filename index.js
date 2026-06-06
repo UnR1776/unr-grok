@@ -9,14 +9,19 @@ const openai = new OpenAI({
 });
 
 app.get('/grok', async (req, res) => {
-  let query = req.query.q || req.query.args || req.query.msg || req.query.message || req.query.fullmessage || "";
+  let raw = req.query.q || req.query.args || req.query.msg || req.query.message || req.query.fullmessage || "";
 
-  query = decodeURIComponent(query.replace(/\+/g, ' '));
+  // Super aggressive cleaning
+  let query = decodeURIComponent(raw.replace(/\+/g, ' '));
   query = query.replace(/^!grok\s*/i, "").trim();
 
-  if (!query) query = "What is your question?";
+  console.log("RAW:", raw);
+  console.log("FINAL QUERY:", query);
 
-  console.log("FINAL QUERY USED:", query);
+  if (!query || query.length < 3) {
+    res.send("Grok here. Fire your question, patriot.");
+    return;
+  }
 
   try {
     const completion = await openai.chat.completions.create({
@@ -29,7 +34,7 @@ app.get('/grok', async (req, res) => {
         { role: "user", content: query }
       ],
       max_tokens: 130,
-      temperature: 0.8
+      temperature: 0.85
     });
 
     res.send(completion.choices[0].message.content.trim());
