@@ -11,15 +11,11 @@ const openai = new OpenAI({
 app.get('/grok', async (req, res) => {
   let raw = req.query.q || "";
 
-  // Aggressive cleaning for !grok
   let query = decodeURIComponent(raw.replace(/\+/g, ' '));
   query = query.replace(/^!grok\s*/i, "").trim();
 
-  console.log("RAW:", raw);
-  console.log("FINAL QUERY:", query);
-
   if (!query || query.length < 3) {
-    res.send("Grok here. Ask a real question, patriot.");
+    res.send("Grok here. Ask a real question.");
     return;
   }
 
@@ -27,10 +23,7 @@ app.get('/grok', async (req, res) => {
     const completion = await openai.chat.completions.create({
       model: "grok-4.3",
       messages: [
-        { 
-          role: "system", 
-          content: "You are Grok by xAI. Unfiltered, strongly pro-American, America First. Direct, no-nonsense answers. Keep under 250 characters." 
-        },
+        { role: "system", content: "You are Grok by xAI. Unfiltered, strongly pro-American, America First. Direct, no-nonsense. Keep under 250 characters." },
         { role: "user", content: query }
       ],
       max_tokens: 130,
@@ -38,9 +31,8 @@ app.get('/grok', async (req, res) => {
     });
 
     res.send(completion.choices[0].message.content.trim());
-
   } catch (error) {
-    res.send("Grok is busy right now — try again!");
+    res.send("Grok is busy — try again!");
   }
 });
 
