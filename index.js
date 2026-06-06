@@ -9,13 +9,16 @@ const openai = new OpenAI({
 });
 
 app.get('/grok', async (req, res) => {
-  let raw = req.query.q || "";
+  let raw = req.query.q || req.query.fullmessage || req.query.message || req.query.args || req.query.command || req.url;
 
   let query = decodeURIComponent(raw.replace(/\+/g, ' '));
   query = query.replace(/^!grok\s*/i, "").trim();
 
+  console.log("RAW:", raw);
+  console.log("FINAL QUERY:", query);
+
   if (!query || query.length < 3) {
-    res.send("Grok here. Ask a real question.");
+    res.send("Grok here. Ask a real question, patriot.");
     return;
   }
 
