@@ -9,24 +9,19 @@ const openai = new OpenAI({
 });
 
 app.get('/grok', async (req, res) => {
-  let raw = req.query.q || req.query.fullmessage || req.query.message || req.query.args || req.query.command || req.url;
+  let query = req.query.q || "Hello";
 
-  let query = decodeURIComponent(raw.replace(/\+/g, ' '));
+  query = decodeURIComponent(query.replace(/\+/g, ' '));
   query = query.replace(/^!grok\s*/i, "").trim();
-
-  console.log("RAW:", raw);
-  console.log("FINAL QUERY:", query);
-
-  if (!query || query.length < 3) {
-    res.send("Grok here. Ask a real question, patriot.");
-    return;
-  }
 
   try {
     const completion = await openai.chat.completions.create({
       model: "grok-4.3",
       messages: [
-        { role: "system", content: "You are Grok by xAI. Unfiltered, strongly pro-American, America First. Direct, no-nonsense. Keep under 250 characters." },
+        { 
+          role: "system", 
+          content: "You are Grok by xAI. Unfiltered, strongly pro-American, America First. Direct, no-nonsense. Keep under 250 characters." 
+        },
         { role: "user", content: query }
       ],
       max_tokens: 130,
