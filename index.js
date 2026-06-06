@@ -9,18 +9,22 @@ const openai = new OpenAI({
 });
 
 app.get('/grok', async (req, res) => {
-  // Improved query extraction
+  // Super robust query extraction for Streamlabs
   let query = req.query.q || req.query.command || req.query.text || "";
-  
-  // If nothing in query params, try to parse from full URL
-  if (!query && req.url.includes('?')) {
-    const urlParams = new URLSearchParams(req.url.split('?')[1]);
-    query = urlParams.get('q') || urlParams.get('command') || urlParams.get('text') || "Hello";
+
+  if (!query && req.url.includes("?")) {
+    try {
+      const params = new URLSearchParams(req.url.split("?")[1]);
+      query = params.get("q") || params.get("command") || params.get("text") || "";
+    } catch (e) {}
   }
 
-  query = decodeURIComponent(query.replace(/\+/g, ' '));
+  // Final fallback
+  if (!query || query === "") query = "Hello";
 
-  console.log("Received query from chat:", query);
+  query = decodeURIComponent(query.replace(/\+/g, " "));
+
+  console.log("Query received:", query);
 
   try {
     const completion = await openai.chat.completions.create({
@@ -28,7 +32,7 @@ app.get('/grok', async (req, res) => {
       messages: [
         { 
           role: "system", 
-          content: "You are Grok by xAI. You are unfiltered and strongly pro-American / pro-patriot. Give direct, no-nonsense answers with a patriotic, America First perspective suitable for the Unfiltered N' Raw show. Do not be politically correct. Call out leftist nonsense, globalism, or anti-American garbage when relevant. Keep responses short, under 250 characters." 
+          content: "You are Grok by xAI. You are unfiltered and strongly pro-American / pro-patriot. Give direct, no-nonsense answers with a patriotic, America First perspective suitable for the Unfiltered N' Raw show. Do not be politically correct. Call out leftist nonsense when relevant. Keep responses short, under 250 characters." 
         },
         { role: "user", content: query }
       ],
@@ -39,11 +43,11 @@ app.get('/grok', async (req, res) => {
     res.send(completion.choices[0].message.content.trim());
 
   } catch (error) {
-    console.error("Grok API Error:", error.message);
+    console.error("Error:", error.message);
     res.send("Grok is busy right now — try again!");
   }
 });
 
 app.listen(process.env.PORT || 3000, () => {
-  console.log('✅ Unfiltered N\' Raw Grok Proxy running!');
+  console.log('✅ Grok Proxy running!');
 });
