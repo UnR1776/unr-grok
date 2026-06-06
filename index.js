@@ -22,20 +22,14 @@ app.get('/grok', async (req, res) => {
         { role: "user", content: query }
       ],
       max_tokens: 130,
-      temperature: 0.8
+      temperature: 0.85
     });
 
     res.send(completion.choices[0].message.content.trim());
 
   } catch (error) {
     console.error("Grok API Error:", error.message);
-    if (error.message.includes("credit") || error.message.includes("billing")) {
-      res.send("No xAI credits - add funds in console.x.ai");
-    } else if (error.message.includes("API key")) {
-      res.send("API key issue - check Render environment variable");
-    } else {
-      res.send("Grok is busy right now — try again in a few seconds!");
-    }
+    res.send("Grok is busy right now — try again!");
   }
 });
 
