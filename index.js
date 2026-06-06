@@ -9,14 +9,18 @@ const openai = new OpenAI({
 });
 
 app.get('/grok', async (req, res) => {
-  // Better query handling
-  let query = req.query.q;
-  if (!query && req.query.command) query = req.query.command;
-  if (!query) query = req.url.split('?q=')[1] || "Hello";
+  // Improved query extraction
+  let query = req.query.q || req.query.command || req.query.text || "";
+  
+  // If nothing in query params, try to parse from full URL
+  if (!query && req.url.includes('?')) {
+    const urlParams = new URLSearchParams(req.url.split('?')[1]);
+    query = urlParams.get('q') || urlParams.get('command') || urlParams.get('text') || "Hello";
+  }
 
-  query = decodeURIComponent(query);
+  query = decodeURIComponent(query.replace(/\+/g, ' '));
 
-  console.log("Received query:", query); // For debugging
+  console.log("Received query from chat:", query);
 
   try {
     const completion = await openai.chat.completions.create({
