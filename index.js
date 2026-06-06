@@ -9,17 +9,18 @@ const openai = new OpenAI({
 });
 
 app.get('/grok', async (req, res) => {
-  let raw = req.query.q || req.query.args || req.query.msg || req.query.command || "";
-  
-  // Aggressive cleaning
-  let query = raw.replace(/^!grok\s*/i, "").trim();
-  
-  if (!query || query === "") {
-    query = raw; // fallback
+  let raw = req.query.q || req.query.args || req.query.msg || "";
+
+  // Better decoding to fix � replacement character
+  let query = decodeURIComponent(raw.replace(/\+/g, ' '));
+  query = query.replace(/^!grok\s*/i, "").trim();
+
+  if (!query || query.length < 2) {
+    query = raw.replace(/^!grok\s*/i, "").trim();
   }
 
   console.log("RAW:", raw);
-  console.log("CLEANED QUERY:", query);
+  console.log("CLEANED:", query);
 
   try {
     const completion = await openai.chat.completions.create({
@@ -27,19 +28,21 @@ app.get('/grok', async (req, res) => {
       messages: [
         { 
           role: "system", 
-          content: "You are Grok by xAI. Unfiltered, pro-American, America First. Direct answers. Keep short." 
+          content: "You are Grok by xAI. You are unfiltered and strongly pro-American / pro-patriot. Give direct, no-nonsense answers with a patriotic, America First perspective. Keep responses short, under 250 characters." 
         },
         { role: "user", content: query }
       ],
-      max_tokens: 120,
+      max_tokens: 130,
       temperature: 0.8
     });
 
     res.send(completion.choices[0].message.content.trim());
 
   } catch (error) {
-    res.send("Grok is busy — try again!");
+    res.send("Grok is busy right now — try again!");
   }
 });
 
-app.listen(process.env.PORT || 3000);
+app.listen(process.env.PORT || 3000, () => {
+  console.log('✅ Grok Proxy running!');
+});
