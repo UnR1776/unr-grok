@@ -30,7 +30,7 @@ app.get('/grok', async (req, res) => {
 
     res.send(completion.choices[0].message.content.trim());
   } catch (error) {
-    res.send("Grok is busy — try again!");
+    res.send("MAGA Grok is busy — try again!");
   }
 });
 
